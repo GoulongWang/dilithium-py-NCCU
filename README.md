@@ -3,6 +3,12 @@
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
 # CRYSTALS-Dilithium Python Implementation
+## 如何測試改完的 Code
+1. 修改完 Code 之後執行
+```
+python3 -m pip install -e .   
+```
+2. 在 Interpreter 測試輸出
 
 > [!CAUTION]
 > :warning: **Under no circumstances should this be used for cryptographic
