@@ -215,6 +215,24 @@ class ML_DSA:
 
         return pk, sk
 
+    def BinaryToRing(self, binary):
+        ring = [0] * 256
+        ring[:len(binary)] = binary
+        return ring
+
+    def OneOneMapping(self, h_value):
+        chunk = 256 // (self.k ** 2)
+        return [self.BinaryToRing(h_value[i: i + chunk]) for i in range(0, 256, chunk)]
+
+    def H(self, ID):
+        h_bytes = self._h(ID, 32) # 256 bits = 32 bytes
+        h_value = []
+        for byte in h_bytes:      
+            for bit in range(7, -1, -1):   
+                h_value.append((byte >> bit) & 1)
+        
+        return self.OneOneMapping(h_value)
+
     def _sign_internal(self, sk_bytes, m, rnd, external_mu=False):
         """
         Deterministic algorithm to generate a signature for a formatted message
