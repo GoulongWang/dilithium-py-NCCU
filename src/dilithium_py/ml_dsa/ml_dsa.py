@@ -215,25 +215,7 @@ class ML_DSA:
 
         return pk, sk
 
-    def BinaryToRing(self, binary):
-        ring = [0] * 256
-        ring[:len(binary)] = binary
-        return ring
-
-    def OneOneMapping(self, h_value):
-        chunk = 256 // (self.k ** 2)
-        return [self.BinaryToRing(h_value[i: i + chunk]) for i in range(0, 256, chunk)]
-
-    def H(self, ID):
-        h_bytes = self._h(ID, 32) # 256 bits = 32 bytes
-        h_value = []
-        for byte in h_bytes:      
-            for bit in range(7, -1, -1):   
-                h_value.append((byte >> bit) & 1)
-        
-        return self.OneOneMapping(h_value)
-
-    def _sign_internal(self, sk_bytes, m, rnd, external_mu=False):
+    def _sign_internal(self, sk_bytes, m, ID, rnd, external_mu=False):
         """
         Deterministic algorithm to generate a signature for a formatted message
         M' following Algorithm 7 (FIPS 204)
@@ -251,6 +233,9 @@ class ML_DSA:
 
         # Generate matrix A ∈ R^(kxl) in the NTT domain
         A_hat = self._expand_matrix_from_seed(rho)
+        
+        #M = self.H(ID).to_ntt()
+        #print(M)
 
         # Set seeds and nonce (kappa)
         if external_mu:
@@ -367,7 +352,7 @@ class ML_DSA:
         pk, sk = self._keygen_internal(seed)
         return (pk, sk)
 
-    def sign(self, sk_bytes, m, ctx=b"", deterministic=False):
+    def sign(self, sk_bytes, m, ID, ctx=b"", deterministic=False):
         """
         Generates an ML-DSA signature following
         Algorithm 2 (FIPS 204)
@@ -386,7 +371,7 @@ class ML_DSA:
         m_prime = bytes([0]) + bytes([len(ctx)]) + ctx + m
 
         # Compute the signature of m_prime
-        sig_bytes = self._sign_internal(sk_bytes, m_prime, rnd)
+        sig_bytes = self._sign_internal(sk_bytes, m_prime, ID,rnd)
         return sig_bytes
 
     def verify(self, pk_bytes, m, sig_bytes, ctx=b""):
