@@ -217,7 +217,9 @@ class ML_DSA:
     
     def BinaryToRing(self, binary):
         coeffs = [0] * 256
-        coeffs[:len(binary)] = binary
+        #coeffs[:len(binary)] = binary
+        for i in range(len(binary)):
+            coeffs[i] = binary[i] * pow(-1, i)
         return self.R(coeffs).to_ntt()
 
     def OneOneMapping(self, h_value): 
@@ -265,7 +267,9 @@ class ML_DSA:
         # Generate matrix A ∈ R^(kxl) in the NTT domain
         A_hat = self._expand_matrix_from_seed(rho)
         M_hat = self.H(bytes(ID)) 
+        print("H(ID) = \n", M_hat.from_ntt().to_reduce_mod_pm())
         A_prime = M_hat @ A_hat
+
         #print("A_prime = ", A_prime)
 
         # Set seeds and nonce (kappa)
@@ -321,6 +325,8 @@ class ML_DSA:
             if h.sum_hint() > self.omega:
                 continue
 
+            ans = (M_hat @ s2_hat.scale(c_hat)).from_ntt().to_reduce_mod_pm()
+            print("H(ID) * c * s_2 = ", ans)
             return self._pack_sig(c_tilde, z, h)
 
     def _verify_internal(self, pk_bytes, m, sig_bytes, ID):

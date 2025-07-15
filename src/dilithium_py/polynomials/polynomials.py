@@ -6,7 +6,7 @@ from ..utilities.utils import (
     decompose,
     check_norm_bound,
 )
-from ..utilities.utils import make_hint, make_hint_optimised, use_hint
+from ..utilities.utils import make_hint, make_hint_optimised, use_hint, reduce_mod_pm
 
 try:
     from xoflib import shake128, shake256
@@ -233,7 +233,12 @@ class PolynomialRingDilithium(PolynomialRing):
                 f"Polynomials should be constructed from a list of integers, of length at most d = {256}"
             )
         return element(self, coefficients)
-
+    
+    def to_reduce_mod_pm(self):
+        coeffs = [
+            reduce_mod_pm(8380417) for h in self.coeffs
+        ]
+        return self(coeffs)
 
 class PolynomialDilithium(Polynomial):
     def __init__(self, parent, coefficients):
@@ -382,6 +387,12 @@ class PolynomialDilithium(Polynomial):
     def use_hint(self, other, alpha):
         coeffs = [
             use_hint(h, r, alpha, 8380417) for h, r in zip(self.coeffs, other.coeffs)
+        ]
+        return self.parent(coeffs)
+    
+    def to_reduce_mod_pm(self):
+        coeffs = [
+            reduce_mod_pm(h, 8380417) for h in self.coeffs
         ]
         return self.parent(coeffs)
 

@@ -195,6 +195,10 @@ class MatrixDilithium(Matrix):
             for r1, r2 in zip(self._data, other._data)
         ]
         return self.parent(matrix)
+    
+    def to_reduce_mod_pm(self):
+        matrix = [[x.to_reduce_mod_pm() for x in row] for row in self._data]
+        return self.parent(matrix)
 
     def sum_hint(self):
         """
