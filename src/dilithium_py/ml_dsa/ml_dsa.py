@@ -266,11 +266,7 @@ class ML_DSA:
 
         # Generate matrix A ∈ R^(kxl) in the NTT domain
         A_hat = self._expand_matrix_from_seed(rho)
-        M_hat = self.H(bytes(ID)) 
-        print("H(ID) = \n", M_hat.from_ntt().to_reduce_mod_pm())
-        A_prime = M_hat @ A_hat
-
-        #print("A_prime = ", A_prime)
+        M_hat = self.H(bytes(ID))
 
         # Set seeds and nonce (kappa)
         if external_mu:
@@ -284,8 +280,7 @@ class ML_DSA:
         while True:
             y = self._expand_mask_vector(rho_prime, kappa)
             y_hat = y.to_ntt()
-            #w = (A_hat @ y_hat).from_ntt()
-            w = (A_prime @ y_hat).from_ntt()
+            w = (A_hat @ y_hat).from_ntt()
 
             # increment the nonce
             kappa += self.l
@@ -298,9 +293,12 @@ class ML_DSA:
             # document precisely.
             # Extract out only the high bits
             w1 = w.high_bits(alpha)
+            H_ID_w1 = (M_hat @ w1.to_ntt()).from_ntt()
+            #print(H_ID_w1)
 
             # Create challenge polynomial
-            w1_bytes = w1.bit_pack_w(self.gamma_2)
+            w1_bytes = H_ID_w1.bit_pack_w(self.gamma_2)
+            #w1_bytes = w1.bit_pack_w(self.gamma_2)
             c_tilde = self._h(mu + w1_bytes, self.c_tilde_bytes)
             c = self.R.sample_in_ball(c_tilde, self.tau)
             c_hat = c.to_ntt()
@@ -325,8 +323,6 @@ class ML_DSA:
             if h.sum_hint() > self.omega:
                 continue
 
-            ans = (M_hat @ s2_hat.scale(c_hat)).from_ntt().to_reduce_mod_pm()
-            print("H(ID) * c * s_2 = ", ans)
             return self._pack_sig(c_tilde, z, h)
 
     def _verify_internal(self, pk_bytes, m, sig_bytes, ID):
@@ -344,8 +340,6 @@ class ML_DSA:
             return False
 
         A_hat = self._expand_matrix_from_seed(rho)
-        M_hat = self.H(bytes(ID)) 
-        A_prime = M_hat @ A_hat
 
         tr = self._h(pk_bytes, 64)
         mu = self._h(tr + m, 64)
@@ -357,14 +351,15 @@ class ML_DSA:
 
         t1 = t1.scale(1 << self.d)
         t1 = t1.to_ntt()
-        t1_prime = M_hat @ t1
 
-        #Az_minus_ct1 = (A_hat @ z) - t1.scale(c)
-        Az_minus_ct1 = (A_prime @ z) - t1_prime.scale(c)
+        Az_minus_ct1 = (A_hat @ z) - t1.scale(c)
         Az_minus_ct1 = Az_minus_ct1.from_ntt()
 
         w_prime = h.use_hint(Az_minus_ct1, 2 * self.gamma_2)
-        w_prime_bytes = w_prime.bit_pack_w(self.gamma_2)
+        M_hat = self.H(bytes(ID))
+        H_ID_w_prime = (M_hat @ w_prime.to_ntt()).from_ntt()
+        w_prime_bytes = H_ID_w_prime.bit_pack_w(self.gamma_2)
+        #w_prime_bytes = w_prime.bit_pack_w(self.gamma_2)
 
         return c_tilde == self._h(mu + w_prime_bytes, self.c_tilde_bytes)
 

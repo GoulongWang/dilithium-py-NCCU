@@ -353,12 +353,12 @@ class PolynomialDilithium(Polynomial):
     def bit_pack_w(self, gamma_2):
         # Level 2 parameter set
         if gamma_2 == 95232:
-            return self.__bit_pack(self.coeffs, 6, 192)
+            return self.__bit_pack(self.coeffs, 23, 736) # 6, 192
         # Level 3 and 5 parameter set
         assert gamma_2 == 261888, (
             f"Expected gamma_2 to be either (q-1)/88 or (q-1)/32, got {gamma_2 = }"
         )
-        return self.__bit_pack(self.coeffs, 4, 128)
+        return self.__bit_pack(self.coeffs, 23, 736) # 4
 
     def bit_pack_z(self, gamma_1):
         altered_coeffs = [self._sub_mod_q(gamma_1, c) for c in self.coeffs]
