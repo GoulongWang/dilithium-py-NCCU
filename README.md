@@ -39,3 +39,12 @@ for i in range(100):
 
 print("ALL GOOD!")
 ```
+
+## 演算法
+修改 ML-DSA 演算法如下
+![img](revised-ML-DSA.png)
+
+## Functions 說明
+- H(ID): 輸入 ID，回傳一個 k-by-k 矩陣（NTT domain）
+- OneOneMapping(h_value): 由 h_value 生成出對應的 k-by-k 矩陣
+- BinaryToRing(binary): 一個 0/1 list 生成一個 NTT 形式多項式

@@ -217,7 +217,6 @@ class ML_DSA:
     
     def BinaryToRing(self, binary):
         coeffs = [0] * 256
-        #coeffs[:len(binary)] = binary
         for i in range(len(binary)):
             coeffs[i] = binary[i] * pow(-1, i)
         return self.R(coeffs).to_ntt()
@@ -294,11 +293,9 @@ class ML_DSA:
             # Extract out only the high bits
             w1 = w.high_bits(alpha)
             H_ID_w1 = (M_hat @ w1.to_ntt()).from_ntt()
-            #print(H_ID_w1)
 
             # Create challenge polynomial
             w1_bytes = H_ID_w1.bit_pack_w(self.gamma_2)
-            #w1_bytes = w1.bit_pack_w(self.gamma_2)
             c_tilde = self._h(mu + w1_bytes, self.c_tilde_bytes)
             c = self.R.sample_in_ball(c_tilde, self.tau)
             c_hat = c.to_ntt()
@@ -359,7 +356,6 @@ class ML_DSA:
         M_hat = self.H(bytes(ID))
         H_ID_w_prime = (M_hat @ w_prime.to_ntt()).from_ntt()
         w_prime_bytes = H_ID_w_prime.bit_pack_w(self.gamma_2)
-        #w_prime_bytes = w_prime.bit_pack_w(self.gamma_2)
 
         return c_tilde == self._h(mu + w_prime_bytes, self.c_tilde_bytes)
 
